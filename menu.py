@@ -2,9 +2,10 @@
 # coding=utf-8
 """An interactive menu which relies upon audio commands and options."""
 
-import listener
 import re
 import sys
+
+import listener
 
 
 def status_update(msg: str):
@@ -30,15 +31,17 @@ class Menu(object):
 
     def get_help(self):
         """Display help... aka available choices."""
-        msg = 'The available choices are: {}'.format(' '.join(self.choices))
+        msg = 'The available choices are: {}'.format(', '.join(self.choices[:-1]) + ', or {}'.format(self.choices[-1]))
         status_update(msg)
 
-    def get_user_input(self, prompt='Please make a selection.', interpret=True):
+    def get_user_input(self, prompt='Please make a selection.', interpret=True, convert_spaces=False):
         """Get verbal user input.
 
         Arguments:
             prompt (str): What to prompt/question to ask the user.
             interpret (bool): Whether to interpret the input via NLTK or keep it raw.
+            convert_spaces (bool): Convert the spaces between words to underscores.
+                i.e. 'get help' -> 'get_help'
 
         Return:
             text (str): The text interpretation of the verbal input.
@@ -46,6 +49,8 @@ class Menu(object):
         listener.speak_text(prompt)
         raw_text = listener.listen_and_transcribe(interpret=interpret)
         text = raw_text.lower().strip()
+        if convert_spaces:
+            re.sub(r'\s+', '_', text)
         return text
 
     def go_back(self):
@@ -66,7 +71,7 @@ class Menu(object):
         while True:
             matched = False
             self.get_help()
-            text = re.sub(r'\s+', '_', self.get_user_input())
+            text = self.get_user_input(convert_spaces=True)
             status_update(text)
             # Option 1: Easy Match; A piece of the input matches one of the methods we have defined.
             if hasattr(self, text):
@@ -88,3 +93,4 @@ class Menu(object):
                 status_update('I didn\'t find any matches.  Please try again.')
             else:
                 status_update('Is there anything else that I can help you with?')
+                # TODO: yes/no helper here which will call exit if 'no' in this instance.

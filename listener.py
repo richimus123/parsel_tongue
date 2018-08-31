@@ -40,7 +40,7 @@ def listen_and_transcribe(interpret=True) -> str:
         except Exception as err:
             print(err)
             speak_text('I didn\'t understand what was said.  Please try again.')
-            result = ''
+            return listen_and_transcribe(interpret=interpret)
     if interpret and result:
         result = interpret_meaning(result)
     return result
@@ -64,7 +64,6 @@ def interpret_meaning(text: str) -> str:
     else:
         result = ' '.join(stems)
     return result
-
 
 
 def speak_text(text: str) -> None:
