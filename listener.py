@@ -10,10 +10,10 @@ def echo() -> None:
     """Listen for input and then repeat what was said."""
     input_text = listen_and_transcribe(interpret=False)
     if input_text:
-        speak_text('I will now repeat back what you said.')
-        speak_text(input_text)
+        status_update('I will now repeat back what you said.')
+        status_update(input_text)
     else:
-        speak_text('Nothing was said, so I have nothing to repeat.')
+        status_update('Nothing was said, so I have nothing to repeat.')
 
 
 def listen_and_transcribe(interpret=True) -> str:
@@ -28,18 +28,19 @@ def listen_and_transcribe(interpret=True) -> str:
     rec = speech_recognition.Recognizer()
     with speech_recognition.Microphone() as source:
         try:
-            audio_data = rec.listen(source)
+            audio_data = rec.listen(source, timeout=3)
+            # TODO: Why does this sometimes not hear the first few word(s)?
         except speech_recognition.WaitTimeoutError:
             audio_data = ''
     if not audio_data:
-        speak_text('I didn\'t hear anything, please try again.')
+        status_update('I didn\'t hear anything, please try again.')
         result = ''
     else:
         try:
             result = rec.recognize_google(audio_data)
         except Exception as err:
             print(err)
-            speak_text('I didn\'t understand what was said.  Please try again.')
+            status_update('I didn\'t understand what was said.  Please try again.')
             return listen_and_transcribe(interpret=interpret)
     if interpret and result:
         result = interpret_meaning(result)
@@ -49,7 +50,7 @@ def listen_and_transcribe(interpret=True) -> str:
 def interpret_meaning(text: str) -> str:
     """Try to interpret the 'meaning' of what was said.  Translate it into a known term if applicable."""
     print('Analyzing text: {}.'.format(text))
-    speak_text('Let me see if I understand.')
+    status_update('Let me see if I understand.')
     # Break up the "sentence" into individual tokens (bigrams for now).
     tokens = nltk.word_tokenize(text)
     # Remove any stop words which don't really help the context.
@@ -59,7 +60,7 @@ def interpret_meaning(text: str) -> str:
     stemmer = nltk.stem.PorterStemmer()
     stems = [stemmer.stem(token) for token in tokens]
     if not stems:
-        speak_text('I wasn\'t able to figure out what you meant.')
+        status_update('I wasn\'t able to figure out what you meant.')
         result = ''
     else:
         result = ' '.join(stems)
@@ -75,3 +76,9 @@ def speak_text(text: str) -> None:
     engine = pyttsx3.init()
     engine.say(text)
     engine.runAndWait()
+
+
+def status_update(msg: str):
+    """Provide a verbal and visual status update."""
+    print(msg)
+    speak_text(msg)

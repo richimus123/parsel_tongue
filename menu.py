@@ -8,19 +8,15 @@ import sys
 import listener
 
 
-def status_update(msg: str):
-    """Provide a verbal and visual status update."""
-    print(msg)
-    listener.speak_text(msg)
-
-
 class Menu(object):
     """Base class for menus."""
     sub_menus = []
 
     def __init__(self, menu_name: str, choices: list):
-        self.choices = sorted(choices + ['go back', 'exit'])
+        self.choices = sorted(choices + ['go back', 'exit', 'help'])
         self.name = menu_name.lower().strip()
+        if not self.name.endswith('Menu'):
+            self.name += ' Menu'
         self.previous_menu = None
 
     def __repr__(self):
@@ -31,10 +27,10 @@ class Menu(object):
 
     def get_help(self):
         """Display help... aka available choices."""
-        msg = 'The available choices are: {}'.format(', '.join(self.choices[:-1]) + ', or {}'.format(self.choices[-1]))
-        status_update(msg)
+        msg = 'The available choices are: {}'.format(', '.join(self.choices[:-1]) + ', or {}.'.format(self.choices[-1]))
+        listener.status_update(msg)
 
-    def get_user_input(self, prompt='Please make a selection.', interpret=True, convert_spaces=False):
+    def get_user_input(self, prompt='Please make a selection now.', interpret=True, convert_spaces=False):
         """Get verbal user input.
 
         Arguments:
@@ -46,11 +42,11 @@ class Menu(object):
         Return:
             text (str): The text interpretation of the verbal input.
         """
-        listener.speak_text(prompt)
+        listener.status_update(prompt)
         raw_text = listener.listen_and_transcribe(interpret=interpret)
         text = raw_text.lower().strip()
         if convert_spaces:
-            re.sub(r'\s+', '_', text)
+            re.sub(r'\s', '_', text)
         return text
 
     def go_back(self):
@@ -58,21 +54,24 @@ class Menu(object):
         if self.previous_menu:
             self.previous_menu.run_menu()
         else:
-            status_update('No previous menu exists.')
+            listener.status_update('No previous menu exists.')
 
     def exit(self):
         """Exit the menu."""
-        status_update('Exiting')
+        listener.status_update('Exiting')
         sys.exit(0)
 
-    def run_menu(self):
+    def run_menu(self, ignore_words=()):
         """Run the current menu."""
-        status_update('Welcome to the {}.'.format(self.name))
+        listener.status_update('Welcome to the {}.'.format(self.name))
+        self.get_help()
         while True:
             matched = False
-            self.get_help()
             text = self.get_user_input(convert_spaces=True)
-            status_update(text)
+            for word in ignore_words:
+                text.replace(word, '')
+            text = text.replace(' ', '_')
+            listener.status_update('What I interpreted from what you said was: {}'.format(text))
             # Option 1: Easy Match; A piece of the input matches one of the methods we have defined.
             if hasattr(self, text):
                 getattr(self, text)()
@@ -90,7 +89,7 @@ class Menu(object):
                         break
             if not matched:
                 # Option 3: Bad input; It doesn't match anything we have defined.
-                status_update('I didn\'t find any matches.  Please try again.')
+                listener.status_update('I didn\'t find any matches.  Please try again.')
             else:
-                status_update('Is there anything else that I can help you with?')
+                listener.status_update('Is there anything else that I can help you with?')
                 # TODO: yes/no helper here which will call exit if 'no' in this instance.

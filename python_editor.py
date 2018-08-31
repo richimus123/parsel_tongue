@@ -5,14 +5,23 @@ import textwrap
 
 import menu
 
+# TODO: Add logging, asyncio for performance gains.
+# TODO: Needs unit tests/performance benchmarks, etc.
+
 
 class FunctionInputMenu(menu.Menu):
     """A sub-menu for editing a function's input variables."""
+    # TODO: Add full-support for mixed args, kwargs, etc.
     pass
 
 
 class FunctionLogicMenu(menu.Menu):
     """A sub-menu for editing a function's logic."""
+    # TODO: Intuitive editing commands:
+    # new line
+    # make a variable
+    # return
+    # yield
     pass
 
 
@@ -28,48 +37,50 @@ class FunctionMenu(menu.Menu):
 
     def __init__(self):
         choices = [
-            'edit name',
-            'edit description',
-            'edit input',
+            'edit function name',
+            'edit function description',
+            'edit function input',
             'edit logic',
-            'finish editing',
+            'save',
         ]
         super(FunctionMenu, self).__init__('New Function', choices)
-        self._funct_name = self.funct_name()
-        self._funct_desc = self.funct_description()
-        # TODO: Support kwargs-like input.
-        # TODO: Add full-support for mixed args, kwargs, etc.
-        self._funct_input = self.funct_input_variables()
-        self._funct_logic = self.funct_logic()
-        # TODO: Test-run a function?
+        self._funct_name = 'no_name'
+        self._funct_desc = ''
+        self._funct_input = []
+        self._funct_logic = 'pass'
+        self._funct_text = ''
+        # TODO: Test-run a function?  eval/literal_eval it and then run it?
         # TODO: Auto-write unit tests?
-        self.run_menu()
+        self.run_menu(ignore_words=('edit', ))
 
-    def funct_name(self) -> str:
+    def function_name(self) -> None:
         """Edit the function's name."""
         name = self.get_user_input('What would you like to name the function?', convert_spaces=True)
-        return name
+        self._funct_name = name
 
-    def funct_description(self) -> str:
+    def function_descript(self) -> None:
         """Edit the function's description/docstring."""
         desc = self.get_user_input('What would you like in the description?', interpret=False)
-        return desc
+        self._funct_desc = desc
 
-    def funct_input_variables(self) -> list:
+    def function_input(self) -> None:
         """Edit the input variables for the function."""
         # TODO: Do a sub-menu here.
-        return []
+        input_vars = self.get_user_input('What would you like to name the input variables?', interpret=False)
+        self._funct_input = input_vars.split()
 
-    def funct_logic(self) -> str:
+    def function_logic(self) -> None:
         """Edit the logic within a function."""
         # TODO: Do a sub-menu here.
-        return """pass"""
+        logic = self.get_user_input('What would you like the function to do?', interpret=False)
+        self._funct_logic = logic
 
-    def finish_editing(self) -> None:
+    def save(self) -> None:
         """Finish editing, save/write the function."""
         # TODO: Write out to a file?
         funct_text = self.template.format(name=self._funct_name,
                                           desc=self._funct_desc,
                                           input_vars=', '.join(self._funct_input),
                                           logic=self._funct_logic)
-        menu.status_update(funct_text)
+        self._funct_text = funct_text
+        menu.listener.status_update(funct_text)
