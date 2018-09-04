@@ -63,22 +63,25 @@ def _get_action_from_text(text: str, keyword: str):
     """Based upon the text input, determine which action to take."""
     filtered_text = []
     LOGGER.debug('Raw text to get action from: "{}".'.format(text))
-    for word in text.split():
-        if word in SYNONYMS:
-            filtered_text = [SYNONYMS[word]]
-            break
-        elif word in IGNORE_WORDS:
-            continue
-        else:
-            filtered_text.append(word)
-    text = ' '.join(filtered_text)
-    LOGGER.debug('Filtered text: "{}".'.format(text))
-    available = globals()
-    funct_name = '_'.join([text, keyword])
-    if funct_name in available:
-        action = available[funct_name]
+    if text in ADMIN_ACTIONS:
+        action = ADMIN_ACTIONS[text]
     else:
-        action = None
+        for word in text.split():
+            if word in SYNONYMS:
+                filtered_text = [SYNONYMS[word]]
+                break
+            elif word in IGNORE_WORDS:
+                continue
+            else:
+                filtered_text.append(word)
+        text = ' '.join(filtered_text)
+        LOGGER.debug('Filtered text: "{}".'.format(text))
+        available = globals()
+        funct_name = '_'.join([text, keyword])
+        if funct_name in available:
+            action = available[funct_name]
+        else:
+            action = None
     return action
 
 
@@ -94,10 +97,13 @@ def _get_yes_or_no(prompt='Please say "yes" or "no".') -> bool:
 
 def _get_help(options: dict):
     """Display help for the current options."""
+    opts = []
     for index, option in enumerate(sorted(list(options.keys()))):
         # Example: "1) Create a new function"
         opt = '{}) {}'.format(index + 1, option)
         _status_update(opt)
+        opts.append(opt)
+    return opts
 
 
 def _run_menu(title: str, options: dict, **kwargs) -> list:
