@@ -46,4 +46,22 @@ def test_get_help(options, expected):
     assert result == sorted(expected)
 
 
-# TODO: Need tests for: _run_menu, _var_exists, new_function, new_variable, new_line (edit/delete/display/save).
+@pytest.skip('Not yet implemented.')
+def test_run_menu():
+    """Test running a menu."""
+    pass
+
+
+def test_var_exists():
+    """Unit tests for _var_exists."""
+    # 1) function_name, not in VARIABLES.
+    editor.VARIABLES = {}
+    assert editor._var_exists('my_function', 'my_variable') is False
+    # 2) var_name not in VARIABLES[function_name].
+    editor.VARIABLES = {'my_function': {'other_variable': {}}}
+    assert editor._var_exists('my_function', 'my_variable') is False
+    # 3) The function and variable do exist.
+    editor.VARIABLES = {'my_function': {'my_variable': {}}}
+    assert editor._var_exists('my_function', 'my_variable') is True
+
+# TODO: Need tests for: new_function, new_variable, new_line (edit/delete/display/save).

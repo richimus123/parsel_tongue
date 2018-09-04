@@ -11,7 +11,9 @@ import speech_recognition
 
 REL_DIR = os.path.dirname(__file__)
 SETTINGS_FILE = os.path.join(REL_DIR, 'settings.ini')
-SETTINGS = configparser.RawConfigParser().read(SETTINGS_FILE)
+SETTINGS = configparser.RawConfigParser()
+SETTINGS.read(SETTINGS_FILE)
+STOP_WORDS = [word.lower().strip() for word in nltk.corpus.stopwords.words('english')]
 
 
 def echo() -> None:
@@ -83,8 +85,7 @@ def interpret_meaning(text: str) -> str:
     # TODO: Add support for n-gram interpretations.
     tokens = nltk.word_tokenize(text)
     # Remove any stop words which don't really help the context.
-    stop_words = nltk.corpus.stopwords.words('english')
-    tokens = [token for token in tokens if token not in stop_words]
+    tokens = [token for token in tokens if token.lower() not in STOP_WORDS]
     # Simplify words down to their roots/stems; in this case Porter Stemming so we have an actual word.
     stemmer = nltk.stem.PorterStemmer()
     stems = [stemmer.stem(token) for token in tokens]
