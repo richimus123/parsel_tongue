@@ -1,25 +1,17 @@
 # coding=utf-8
 """Helper functions for running listening tasks."""
 
+import os
 import re
 
+import configparser
 import nltk
 import pyttsx3
 import speech_recognition
 
-
-def approx_match_text(text: str, possible_matches: list) -> bool:
-    """Try to match a given string against possible key words which may or may not be truncated/stemmed."""
-    matched = False
-    stemmer = nltk.stem.PorterStemmer()
-    for match in possible_matches:
-        if text == match:
-            matched = True
-            break
-        elif stemmer.stem(text) == match:
-            matched = True
-            break
-    return matched
+REL_DIR = os.path.dirname(__file__)
+SETTINGS_FILE = os.path.join(REL_DIR, 'settings.ini')
+SETTINGS = configparser.RawConfigParser().read(SETTINGS_FILE)
 
 
 def echo() -> None:
@@ -63,6 +55,7 @@ def listen_and_transcribe(interpret=True, timeout=3) -> str:
     Returns:
         result (str): The interpreted text from the audio input.
     """
+    # TODO: Replace this with something that is "always listening" for keywords.
     rec = speech_recognition.Recognizer()
     with speech_recognition.Microphone() as mic:
         while True:
@@ -94,9 +87,7 @@ def interpret_meaning(text: str) -> str:
     tokens = [token for token in tokens if token not in stop_words]
     # Simplify words down to their roots/stems; in this case Porter Stemming so we have an actual word.
     stemmer = nltk.stem.PorterStemmer()
-    # TODO: Simplify matching words when we have things like 'creat' instead of 'create'.
     stems = [stemmer.stem(token) for token in tokens]
-    # TODO: Set is breaking the order of things here?  We want to ensure we don't get duplicate input...
     if not stems:
         status_update('I wasn\'t able to figure out what you meant.')
         result = ''
@@ -105,13 +96,15 @@ def interpret_meaning(text: str) -> str:
     return result
 
 
-def speak_text(text: str) -> None:
+def speak_text(text: str, voice_id=SETTINGS['voice']['id']) -> None:
     """Speak text back to the user.
 
     Arguments:
         text (str): Text to vocalize.
+        voice_id (str): A voice ID to use instead of the default; this defaults to Apple's Samantha.
     """
     engine = pyttsx3.init()
+    engine.setProperty('voice', voice_id)
     engine.say(text)
     engine.runAndWait()
 

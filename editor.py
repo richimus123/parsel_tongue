@@ -58,6 +58,8 @@ VARIABLES = {
     # Stored by function_name as key.
 }
 
+# TODO: Move as much as possible of these helper functions to a common library and just have main here.
+
 
 def _get_action_from_text(text: str, keyword: str):
     """Based upon the text input, determine which action to take."""
