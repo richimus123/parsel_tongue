@@ -15,3 +15,19 @@ https://www.nltk.org/
 
 3- Write python based upon the interpreted "meaning"
 That's where this project begins.
+
+# Current
+1- Uses basic menus which provide navigation through features and basic create/edit/delete functionality
+
+2- Settings are controlled in the main menu
+
+3- Menu navigation is pretty basic
+
+# Future
+1- Train a neural network to improve usability of speech to python
+
+2- More conversational interaction
+
+3- Always listening input with a trainable keyword for having it listen
+
+4- Parallelism/multi-threading via asyncio
