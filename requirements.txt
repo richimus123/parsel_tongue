@@ -1,3 +1,4 @@
 nltk
+pyobjc
 pyttsx3
-speech_recognition
+SpeechRecognition
